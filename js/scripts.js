@@ -46,6 +46,12 @@ const starMaterial = new THREE.PointsMaterial({
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
 
+const cameraOrbit = {
+  radius: 18,
+  tilt: 0.3,
+  angle: 0,
+};
+
 function createCloudNebula({ colors, count, spread, scale, position, rotationSpeed = 0.08 }) {
   const positions = [];
   const rawColors = [];
@@ -200,8 +206,25 @@ const nebulae = [
   }),
 ];
 
+const clock = new THREE.Clock();
+
+function animateCamera() {
+  const elapsed = clock.getElapsedTime();
+  const orbitRadius = 17 + Math.sin(elapsed * 0.3) * 2.5;
+  const orbitAngle = elapsed * 0.32;
+  const wobble = Math.sin(elapsed * 1.1) * 2.5;
+
+  cameraOrbit.angle = orbitAngle;
+  camera.position.x = Math.cos(cameraOrbit.angle) * orbitRadius;
+  camera.position.y = Math.sin(cameraOrbit.angle * 1.7) * 3 + wobble * 0.4;
+  camera.position.z = Math.sin(cameraOrbit.angle) * orbitRadius + 2;
+  camera.lookAt(0, 0.5, 0);
+}
+
 function animate() {
   requestAnimationFrame(animate);
+
+  const time = clock.getElapsedTime();
 
   stars.rotation.x += 0.00012;
   stars.rotation.y += 0.00015;
@@ -211,6 +234,8 @@ function animate() {
     nebula.rotation.y += nebula.userData.rotationSpeed;
     nebula.rotation.z += 0.0004 + index * 0.00015;
   });
+
+  animateCamera();
 
   renderer.render(scene, camera);
 }
